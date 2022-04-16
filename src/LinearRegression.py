@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from typing import List, Tuple, Union
 
 from sklearn.model_selection import train_test_split
-from utils import BaseModel, mean_squared_error_fn
+from utils import BaseModel, mean_squared_error_fn, visualize_losses
 from sklearn.datasets import load_boston, load_diabetes
 
 
@@ -73,12 +73,9 @@ class LinearRegression(BaseModel):
         """
         return X.dot(self.W) + self.b
 
-    def visualize_losses(self) -> None:
-        plt.plot(range(1, self.iterations + 1), self.losses)
-        plt.title("MSE per iteration")
-        plt.xlabel("Number of Iterations")
-        plt.ylabel("MSE")
-        plt.show()
+    def plot_loss(self) -> None:
+        visualize_losses(self.iterations, self.losses)
+
 
 
 # Training on data
@@ -90,7 +87,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     lr = LinearRegression()
     lr.fit(X_train, y_train)
-    lr.visualize_losses()
+    lr.plot_loss()
 
 if __name__ == "__main__":
     main()

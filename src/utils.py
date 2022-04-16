@@ -2,6 +2,7 @@
 import abc
 import numpy as np
 from typing import Tuple, List, Union, Any
+from matplotlib import pyplot as plt
 
 Matrix = Union[Tuple[Tuple[Any]], List[List[Any]], np.ndarray]
 Vector = Union[Tuple[Any], List[Any], np.ndarray]
@@ -51,7 +52,17 @@ def mean_squared_error_fn(y_pred: Vector, y_true: Vector):
     
     Examples
     --------
-    >>> 
+    >>> y_true = [0, 1, 2, 3, 4]
+    >>> y_pred = [0, 1, 2, 3, 4]
+    >>> print(mean_squared_error_fn(y_pred, y_true))
+
+    0.0
+
+    >>> y_test = [0, 2, 3, 1]
+    >>> y_pred = [0, 3, 4, 1]
+    >>> print(mean_squared_error_fn(y_pred, y_test))
+
+    0.5
     """
     if not isinstance(y_true, np.ndarray):
         y_true = np.array(y_true)
@@ -67,12 +78,18 @@ def gradient_descent_lr(X: Matrix, y_true: Vector, W):
     y_pred = predict_lr(X, W)
     pass
 
-def visualize_losses(self) -> None:
-        plt.plot(range(1, self.iterations + 1), self.losses)
-        plt.title("MSE per iteration")
-        plt.xlabel("Number of Iterations")
-        plt.ylabel("MSE")
-        plt.show()
+def visualize_losses(epochs: int, losses: Vector) -> None:
+    """Visualize model's losses over each epoch
+
+    Args:
+        epochs (int): the number of training epochs
+        losses (Vector): loss values per training epoch
+    """
+    plt.plot(range(1, epochs + 1), losses)
+    plt.title("MSE per iteration")
+    plt.xlabel("Number of Iterations")
+    plt.ylabel("MSE")
+    plt.show()
 
 #===============
 class GradientDescent(metaclass=abc.ABCMeta):
