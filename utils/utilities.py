@@ -1,6 +1,7 @@
 """Utility functions """
 import abc
 import numpy as np
+import pandas as pd
 from typing import Tuple, List, Union, Any
 from matplotlib import pyplot as plt
 
@@ -27,17 +28,27 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __str__(self) -> None:
         return f"{self.name} for machine learning"
     
-class Eval(metacass=abc.ABCMeta):
+class Eval(metaclass=abc.ABCMeta):
     def __init__(self) -> None:
         pass
-    def save_binary_clf_plot(self, predictions, ground_truths) -> None:
-        pass
-    def save_multi_clf_plot(self, predictions, ground_truths) -> None:
-        pass
-    def save_reg_plot(self, predictions, ground_truths) -> None:
+    @abc.abstractclassmethod
+    def plot(self, predictions: Vector, ground_truths: Vector) -> None:
         pass
 
+    def get_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> pd.DataFrame:
+        """computing confusion matrix
 
+        Args:
+            predictions (Vector): predictions from the model
+            ground_truths (Vector): the labels
+        Return:
+            (pd.DataFrame): confusion matrix in dataframe
+        """
+        df_confusion = pd.crosstab(ground_truths, predictions)
+
+class Visualization(metaclass=abc.ABCMeta):
+    def __init__(self) -> None:
+        pass
 class TestModel(BaseModel):
 
     def __init__(self, name: str = "Test Model") -> None:
@@ -48,6 +59,15 @@ class TestModel(BaseModel):
 
     def predict(self) -> None:
         return super().predict()
+
+class Loss(metaclass=abc.ABCMeta):
+
+    def __init__(self) -> None:
+        pass
+
+    @abc.abstractclassmethod
+    def __loss_fn(self) -> float:
+        pass
 #==========
 
 def mean_squared_error_fn(y_pred: Vector, y_true: Vector):
