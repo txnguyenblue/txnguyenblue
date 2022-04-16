@@ -20,13 +20,23 @@ class BaseModel(metaclass=abc.ABCMeta):
     def predict(self) -> None:
         pass
 
-    @abc.abstractclassmethod
-    def update_weights(self) -> None:
-        pass
+    # @abc.abstractclassmethod
+    # def update_weights(self) -> None:
+    #     pass
 
     def __str__(self) -> None:
         return f"{self.name} for machine learning"
     
+class Eval(metacass=abc.ABCMeta):
+    def __init__(self) -> None:
+        pass
+    def save_binary_clf_plot(self, predictions, ground_truths) -> None:
+        pass
+    def save_multi_clf_plot(self, predictions, ground_truths) -> None:
+        pass
+    def save_reg_plot(self, predictions, ground_truths) -> None:
+        pass
+
 
 class TestModel(BaseModel):
 
@@ -90,6 +100,24 @@ def visualize_losses(epochs: int, losses: Vector) -> None:
     plt.xlabel("Number of Iterations")
     plt.ylabel("MSE")
     plt.show()
+
+def get_numpy_instance(X: Matrix):
+    if not isinstance(X, np.ndarray):
+        X = np.array(X)
+    return X
+
+def get_accuracy(y_true: Vector, y_hat: Vector) -> float:
+    """get accuracy from predictions and ground truths
+
+    Args:
+        y_true (Vector): ground truths vector
+        y_hat (Vector): predictions vector
+
+    Returns:
+        float: accuracy score
+    """
+
+    return np.sum(y_true == y_hat) / len(y_true)
 
 #===============
 class GradientDescent(metaclass=abc.ABCMeta):
