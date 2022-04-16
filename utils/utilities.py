@@ -2,6 +2,7 @@
 import abc
 import numpy as np
 import pandas as pd
+import matplotlib
 from typing import Tuple, List, Union, Any
 from matplotlib import pyplot as plt
 
@@ -28,11 +29,10 @@ class BaseModel(metaclass=abc.ABCMeta):
     def __str__(self) -> None:
         return f"{self.name} for machine learning"
     
-class Eval(metaclass=abc.ABCMeta):
+class Eval():
+    """evaluation tools for machine learning
+    """
     def __init__(self) -> None:
-        pass
-    @abc.abstractclassmethod
-    def plot(self, predictions: Vector, ground_truths: Vector) -> None:
         pass
 
     def get_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> pd.DataFrame:
@@ -43,12 +43,56 @@ class Eval(metaclass=abc.ABCMeta):
             ground_truths (Vector): the labels
         Return:
             (pd.DataFrame): confusion matrix in dataframe
+
+        Examples
+        >>> preds = [1,2,3,1,2,1,1,1]
+        >>> labels = [1,2,3,2,3,1,1,2]
+        >>> print(get_confusion_matrix(predictions, ground_truths))
+
+        Predicted  1  2  3  
+        Actual
+        1          3  2  0        
+        2          0  1  1        
+        3          0  0  1              
         """
         df_confusion = pd.crosstab(ground_truths, predictions)
+        return df_confusion
 
-class Visualization(metaclass=abc.ABCMeta):
-    def __init__(self) -> None:
-        pass
+    
+class Visualization():
+    """visualization tools for machine learning
+    """
+    def __init__(self, fig_size: Tuple[int] = (10, 5)) -> None:
+        self.fig_size = fig_size
+        eval = Eval()
+    
+    def plot_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> matplotlib.axes._subplots.AxesSubplot:
+        """plot confusion matrix
+
+        Args:
+            predictions (Vector): _description_
+            ground_truths (Vector): _description_
+
+        Returns:
+            matplotlib.axes._subplots.AxesSubplot: _description_
+        
+        Examples
+        --------
+
+        >>> predictions = [1,2,3,1,2,2,2] 
+        >>> ground_truths = [1,2,1,1,2,2,2]
+        >>> plot_confusion_matrix(predictions, ground_truths)
+
+        matplotlib.axes._subplots.AxesSubplot
+        """
+        f, ax = plt.subplots(figsize=self.fig_size)
+        df_confusion = eval.get_confusion_matrix(predictions, ground_truths)
+        ax.matshow(df_confusion)
+        for (i, j), value in np.ndenumerate(df_confusion.values):
+            ax.text(j, i, f"{value}", ha="center", va="center")
+        plt.show()
+        return ax
+        
 class TestModel(BaseModel):
 
     def __init__(self, name: str = "Test Model") -> None:
