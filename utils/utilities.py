@@ -34,7 +34,8 @@ class Eval():
     """
     def __init__(self) -> None:
         pass
-
+    
+    # @staticmethod
     def get_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> pd.DataFrame:
         """computing confusion matrix
 
@@ -59,14 +60,20 @@ class Eval():
         return df_confusion
 
     
-class Visualization():
+class Visualization(object):
     """visualization tools for machine learning
+
+    Attributes
+    ----------
+
+        self.fig_size (Tuple[int]): determine the size of the output figure
+        self.eval (Eval): evaluation class
     """
     def __init__(self, fig_size: Tuple[int] = (10, 5)) -> None:
         self.fig_size = fig_size
-        eval = Eval()
+        self.eval = Eval()
     
-    def plot_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> matplotlib.axes._subplots.AxesSubplot:
+    def plot_confusion_matrix(self, predictions: Vector, ground_truths: Vector) -> matplotlib.axes.SubplotBase:
         """plot confusion matrix
 
         Args:
@@ -86,13 +93,32 @@ class Visualization():
         matplotlib.axes._subplots.AxesSubplot
         """
         f, ax = plt.subplots(figsize=self.fig_size)
-        df_confusion = eval.get_confusion_matrix(predictions, ground_truths)
+        df_confusion = self.eval.get_confusion_matrix(predictions, ground_truths)
         ax.matshow(df_confusion)
         for (i, j), value in np.ndenumerate(df_confusion.values):
             ax.text(j, i, f"{value}", ha="center", va="center")
         plt.show()
         return ax
-        
+    
+class Keras(Visualization):
+    """Visualization for keras
+
+    
+    """
+    def __init__(self, fig_size: Tuple[int] = (10, 5)) -> None:
+        super(Keras, self).__init__(fig_size)
+
+    def plot_performance(self, metrics: List[str]) -> matplotlib.axes.SubplotBase:
+        """plot performance plot
+
+        Args:
+            metrics (List[str]): names of metrics to be plotted
+
+        Returns:
+            matplotlib.axes.SubplotBase: _description_
+        """
+        #TODO: add logic for plot performance function
+        pass
 class TestModel(BaseModel):
 
     def __init__(self, name: str = "Test Model") -> None:
@@ -148,9 +174,9 @@ def mean_squared_error_fn(y_pred: Vector, y_true: Vector):
     loss = (np.square(y_true - y_pred)).mean()
     return loss
 
-def gradient_descent_lr(X: Matrix, y_true: Vector, W):
-    y_pred = predict_lr(X, W)
-    pass
+# def gradient_descent_lr(X: Matrix, y_true: Vector, W):
+#     y_pred = predict_lr(X, W)
+#     pass
 
 def visualize_losses(epochs: int, losses: Vector) -> None:
     """Visualize model's losses over each epoch
@@ -179,9 +205,17 @@ def get_accuracy(y_true: Vector, y_hat: Vector) -> float:
 
     Returns:
         float: accuracy score
+
+    Examples:
+
+    >>> y_hat = [1, 1, 1, 1]
+    >>> y_true = [1, 0, 1, 0]
+    >>> print(get_accuracy(y_true, y_hat))
+
+    0.5
     """
 
-    return np.sum(y_true == y_hat) / len(y_true)
+    return np.round(np.sum(y_true == y_hat) / len(y_true), 3)
 
 #===============
 class GradientDescent(metaclass=abc.ABCMeta):
