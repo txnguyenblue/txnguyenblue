@@ -31,11 +31,21 @@ class NaiveBayes(BaseModel):
     def __init__(self, name: str = "Naive Bayes Model") -> None:
         super().__init__(name)
         
-    #TODO: implement logic to handle X as a dataframe    
+    #TODO: Write test for fit function
     def fit(self, X: Matrix, y: Vector) -> None:
-
-        X = get_numpy_instance(X) 
-        y = get_numpy_instance(y)
+        cond1a = isinstance(X, pd.DataFrame)
+        cond1b = isinstance(y, pd.DataFrame)
+        cond2a = isinstance(X, pd.Series)
+        cond2b = isinstance(y, pd.Series)
+        cond1 = (cond1a | cond1b)
+        cond2 = (cond2a | cond2b)
+        
+        if cond1 or cond2:
+            X = X.values
+            y = y.values
+        else:
+            X = get_numpy_instance(X) 
+            y = get_numpy_instance(y)
         self.n_samples, self.n_features = len(X), len(X[0])
         self.n_classes = len(np.unique(y))
 

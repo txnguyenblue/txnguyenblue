@@ -1,10 +1,12 @@
 import tensorflow as tf
 import sys
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
 from tensorflow import keras
 from tensorflow.keras import layers
+from pathlib import Path
 from config import CONFIG
 sys.path.insert(1, str(CONFIG.src))
 sys.path.insert(2, str(CONFIG.utils))
@@ -15,7 +17,8 @@ from utilities import \
 import logging
 from logger import LOGGER
 
-
+file_dir = Path(__file__).resolve()
+file_name = file_dir.stem
 class Distiller(keras.Model):
 
     def __init__(self, teacher, student) -> None:
@@ -57,7 +60,7 @@ class Distiller(keras.Model):
             student_loss = self.student_loss_fn(y, student_predictions)
             distillation_loss = self.distillation_loss_fn(
                 tf.nn.softmax(teacher_predictions / self.temperature, axis=1),
-                tf.nn.softmax(teacher_predictions / self.temperature, axis=1)
+                tf.nn.softmax(student_predictions / self.temperature, axis=1)
             )
 
             loss = self.alpha * student_loss + (1 - self.alpha) * distillation_loss
@@ -68,6 +71,9 @@ class Distiller(keras.Model):
 
         # Update weights
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+
+        # Update the metrics configured in `compiled()`
+        self.compiled_metrics.update_state(y, student_predictions)
 
         # Return a dict of performance
         results = {m.name: m.result() for m in self.metrics}
@@ -169,29 +175,43 @@ def main():
     student_scratch.evaluate(x_test, y_test)
     LOGGER.info("End train and test student alone")
     LOGGER.info("Performance plots:")
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, constrained_layout=True)
+    LOGGER.info(f"Current teacher history: {teacher_history.history}")
+    report_path = CONFIG.reports / file_name
+    report_path.mkdir(parents=True, exist_ok=True)
+    LOGGER.info(f"Saving teacher history to: {str(report_path / 'teacher')}")
+    with open(str(report_path / "teacherHistory"), "wb") as f:
+        pickle.dump(teacher_history.history, f)
     LOGGER.info(f"Current student distill: {student_distiller_history.history}")
-    ax1.plot(teacher_history.history["loss"])
-    ax1.plot(student_distiller_history.history["student_loss"])
-    ax1.plot(student_history.history["loss"])
+    LOGGER.info(f"Saving student history to: {str(report_path / 'student_distill')}")
+    with open(str(report_path / "student_distill"), "wb") as f:
+        pickle.dump(student_distiller_history.history, f)
+    LOGGER.info(f"Current student: {student_history.history}")
+    LOGGER.info(f"Saving student history to: {str(report_path / 'student')}")
+    with open(str(report_path / "student"), "wb") as f:
+        pickle.dump(student_history.history, f)
+    ax1.plot(teacher_history.history["loss"], label="teacher")
+    ax1.plot(student_distiller_history.history["student_loss"], label="student distill")
+    ax1.plot(student_history.history["loss"], label="student")
     ax1.set_xlabel("Epoch")
     ax1.set_ylabel("Training Model Loss")
-    ax2.legend(["teacher", "student distilled", "student"], loc="upper left")
-    # ax2.plot(teacher_history.history["sparse_categorical_accuracy"])
-    # ax2.plot(student_distiller_history.history["sparse_categorical_accuracy"])
-    # ax2.plot(student_history.history["sparse_categorical_accuracy"])
-    # ax2.set_xlabel("Epoch")
-    # ax2.set_ylabel("Training Accuracy")
-    ax4.plot(teacher_history.history["val_loss"])
-    ax4.plot(student_distiller_history.history["val_student_loss"])
-    ax4.plot(student_history.history["val_loss"])
+    # ax2.legend(["teacher", "student distilled", "student"], loc="upper left")
+    ax2.plot(teacher_history.history["sparse_categorical_accuracy"])
+    ax2.plot(student_distiller_history.history["sparse_categorical_accuracy"])
+    ax2.plot(student_history.history["sparse_categorical_accuracy"])
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Training Accuracy")
+    ax4.plot(teacher_history.history["val_loss"], label="teacher")
+    ax4.plot(student_distiller_history.history["val_student_loss"], label="student distill")
+    ax4.plot(student_history.history["val_loss"], label="student")
     ax4.set_xlabel("Epoch")
     ax4.set_ylabel("Val Model Loss")
-    ax3.plot(teacher_history.history["val_sparse_categorical_accuracy"])
-    ax3.plot(student_distiller_history.history["val_sparse_categorical_accuracy"])
-    ax3.plot(student_history.history["val_sparse_categorical_accuracy"])
+    ax3.plot(teacher_history.history["val_sparse_categorical_accuracy"], label="teacher")
+    ax3.plot(student_distiller_history.history["val_sparse_categorical_accuracy"], label="student distill")
+    ax3.plot(student_history.history["val_sparse_categorical_accuracy"], label="student")
     ax3.set_xlabel("Epoch")
     ax3.set_ylabel("Val Accuracy")
+    plt.legend()
     plt.show()
 
 

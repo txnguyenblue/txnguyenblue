@@ -100,7 +100,7 @@ class Visualization(object):
         plt.show()
         return ax
     
-class Keras(Visualization):
+class KerasVisualization(Visualization):
     """Visualization for keras
 
     
@@ -108,6 +108,7 @@ class Keras(Visualization):
     def __init__(self, fig_size: Tuple[int] = (10, 5)) -> None:
         super(Keras, self).__init__(fig_size)
 
+    #TODO: Implement plot for classification and regression
     def plot_performance(self, metrics: List[str]) -> matplotlib.axes.SubplotBase:
         """plot performance plot
 
