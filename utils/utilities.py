@@ -3,6 +3,8 @@ import abc
 import numpy as np
 import pandas as pd
 import matplotlib
+import pickle
+
 from typing import Tuple, List, Union, Any
 from matplotlib import pyplot as plt
 
@@ -196,6 +198,10 @@ def get_numpy_instance(X: Matrix):
     if not isinstance(X, np.ndarray):
         X = np.array(X)
     return X
+def load_pickle(file_path: str):
+    with open(file_path, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 def get_accuracy(y_true: Vector, y_hat: Vector) -> float:
     """get accuracy from predictions and ground truths
